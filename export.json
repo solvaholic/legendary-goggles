@@ -1,0 +1,833 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "resources": [
+    {
+      "apiVersion": "2019-06-01",
+      "location": "Global",
+      "name": "Application Insights Smart Detection",
+      "properties": {
+        "armRoleReceivers": [
+          {
+            "name": "Monitoring Contributor",
+            "roleId": "749f88d5-cbae-40b8-bcfc-e573ddc772fa",
+            "useCommonAlertSchema": true
+          },
+          {
+            "name": "Monitoring Reader",
+            "roleId": "43d0d8ad-25c7-4714-9337-8ba259a9fe05",
+            "useCommonAlertSchema": true
+          }
+        ],
+        "automationRunbookReceivers": [],
+        "azureAppPushReceivers": [],
+        "azureFunctionReceivers": [],
+        "emailReceivers": [],
+        "enabled": true,
+        "groupShortName": "SmartDetect",
+        "itsmReceivers": [],
+        "logicAppReceivers": [],
+        "smsReceivers": [],
+        "voiceReceivers": [],
+        "webhookReceivers": []
+      },
+      "type": "microsoft.insights/actionGroups"
+    },
+    {
+      "apiVersion": "2020-02-02",
+      "kind": "web",
+      "location": "centralus",
+      "name": "solvhaolic-push-log",
+      "properties": {
+        "Application_Type": "web",
+        "Flow_Type": "Redfield",
+        "IngestionMode": "LogAnalytics",
+        "Request_Source": "IbizaWebAppExtensionCreate",
+        "RetentionInDays": 90,
+        "WorkspaceResourceId": "/subscriptions/208eee69-e3fb-452b-8996-4de23e4e7806/resourcegroups/defaultresourcegroup-cus/providers/microsoft.operationalinsights/workspaces/defaultworkspace-208eee69-e3fb-452b-8996-4de23e4e7806-cus",
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      },
+      "type": "microsoft.insights/components"
+    },
+    {
+      "apiVersion": "2021-06-01-preview",
+      "location": "EastUS",
+      "name": "push-log-keyvault",
+      "properties": {
+        "accessPolicies": [
+          {
+            "objectId": "b5249ef5-1679-433a-b9b9-6ac4e0e67180",
+            "permissions": {
+              "certificates": [],
+              "keys": [],
+              "secrets": [
+                "Get",
+                "List"
+              ]
+            },
+            "tenantId": "4d8e6732-27fa-4b81-9848-e9d700f7436e"
+          },
+          {
+            "objectId": "c3e3fc15-58dc-4544-8c20-8c5db1c2090c",
+            "permissions": {
+              "certificates": [
+                "Get",
+                "List",
+                "Delete",
+                "Create",
+                "Import",
+                "Update",
+                "ManageContacts",
+                "GetIssuers",
+                "ListIssuers",
+                "SetIssuers",
+                "DeleteIssuers",
+                "ManageIssuers",
+                "Recover"
+              ],
+              "keys": [
+                "Get",
+                "Create",
+                "Delete",
+                "List",
+                "Update",
+                "Import",
+                "Backup",
+                "Restore",
+                "Recover"
+              ],
+              "secrets": [
+                "Get",
+                "List",
+                "Set",
+                "Delete",
+                "Backup",
+                "Restore",
+                "Recover"
+              ],
+              "storage": [
+                "get",
+                "list",
+                "delete",
+                "set",
+                "update",
+                "regeneratekey",
+                "setsas",
+                "listsas",
+                "getsas",
+                "deletesas"
+              ]
+            },
+            "tenantId": "4d8e6732-27fa-4b81-9848-e9d700f7436e"
+          }
+        ],
+        "enableSoftDelete": true,
+        "enabledForDeployment": false,
+        "enabledForDiskEncryption": false,
+        "enabledForTemplateDeployment": false,
+        "provisioningState": "Succeeded",
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "softDeleteRetentionInDays": 90,
+        "tenantId": "4d8e6732-27fa-4b81-9848-e9d700f7436e",
+        "vaultUri": "https://push-log-keyvault.vault.azure.net/"
+      },
+      "type": "Microsoft.KeyVault/vaults"
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "kind": "Storage",
+      "location": "centralus",
+      "name": "storageaccountpushl9725",
+      "properties": {
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true,
+              "keyType": "Account"
+            },
+            "file": {
+              "enabled": true,
+              "keyType": "Account"
+            }
+          }
+        },
+        "minimumTlsVersion": "TLS1_2",
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "defaultAction": "Allow",
+          "ipRules": [],
+          "virtualNetworkRules": []
+        },
+        "supportsHttpsTrafficOnly": true
+      },
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts"
+    },
+    {
+      "apiVersion": "2021-01-15",
+      "kind": "functionapp",
+      "location": "Central US",
+      "name": "ASP-pushlog-94c0",
+      "properties": {
+        "elasticScaleEnabled": false,
+        "hyperV": false,
+        "isSpot": false,
+        "isXenon": false,
+        "maximumElasticWorkerCount": 1,
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      },
+      "sku": {
+        "capacity": 0,
+        "family": "Y",
+        "name": "Y1",
+        "size": "Y1",
+        "tier": "Dynamic"
+      },
+      "type": "Microsoft.Web/serverfarms"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/degradationindependencyduration",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Degradation in dependency duration",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "degradationindependencyduration",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/degradationinserverresponsetime",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Degradation in server response time",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "degradationinserverresponsetime",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/digestMailConfiguration",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This rule describes the digest mail preferences",
+          "DisplayName": "Digest Mail Configuration",
+          "HelpUrl": "www.homail.com",
+          "IsEnabledByDefault": true,
+          "IsHidden": true,
+          "IsInPreview": false,
+          "Name": "digestMailConfiguration",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/extension_billingdatavolumedailyspikeextension",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the billing data generated by your application, and can warn you about an unusual increase in your application's billing costs",
+          "DisplayName": "Abnormal rise in daily data volume (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/tree/master/SmartDetection/billing-data-volume-daily-spike.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_billingdatavolumedailyspikeextension",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/extension_canaryextension",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Canary extension",
+          "DisplayName": "Canary extension",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/",
+          "IsEnabledByDefault": true,
+          "IsHidden": true,
+          "IsInPreview": true,
+          "Name": "extension_canaryextension",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/extension_exceptionchangeextension",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the exceptions thrown in your application, and can warn you about unusual patterns in your exception telemetry.",
+          "DisplayName": "Abnormal rise in exception volume (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/abnormal-rise-in-exception-volume.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_exceptionchangeextension",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/extension_memoryleakextension",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the memory consumption of each process in your application, and can warn you about potential memory leaks or increased memory consumption.",
+          "DisplayName": "Potential memory leak detected (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/tree/master/SmartDetection/memory-leak.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_memoryleakextension",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/extension_securityextensionspackage",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the telemetry generated by your application and detects potential security issues.",
+          "DisplayName": "Potential security issue detected (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/application-security-detection-pack.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_securityextensionspackage",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/extension_traceseveritydetector",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the trace logs emitted from your application, and can warn you about unusual patterns in the severity of your trace telemetry.",
+          "DisplayName": "Degradation in trace severity ratio (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/degradation-in-trace-severity-ratio.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_traceseveritydetector",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/longdependencyduration",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Long dependency duration",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "longdependencyduration",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/migrationToAlertRulesCompleted",
+      "properties": {
+        "customEmails": [],
+        "enabled": false,
+        "ruleDefinitions": {
+          "Description": "A configuration that controls the migration state of Smart Detection to Smart Alerts",
+          "DisplayName": "Migration To Alert Rules Completed",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": false,
+          "IsHidden": true,
+          "IsInPreview": true,
+          "Name": "migrationToAlertRulesCompleted",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/slowpageloadtime",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Slow page load time",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "slowpageloadtime",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', 'solvhaolic-push-log')]"
+      ],
+      "location": "centralus",
+      "name": "solvhaolic-push-log/slowserverresponsetime",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Slow server response time",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "slowserverresponsetime",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2021-06-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', 'push-log-keyvault')]"
+      ],
+      "location": "EastUS",
+      "name": "push-log-keyvault/github-app-secret",
+      "properties": {
+        "attributes": {
+          "enabled": true
+        }
+      },
+      "type": "Microsoft.KeyVault/vaults/secrets"
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', 'storageaccountpushl9725')]"
+      ],
+      "name": "storageaccountpushl9725/default",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "deleteRetentionPolicy": {
+          "enabled": false
+        }
+      },
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices"
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', 'storageaccountpushl9725')]"
+      ],
+      "name": "storageaccountpushl9725/default",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "protocolSettings": {
+          "smb": {}
+        },
+        "shareDeleteRetentionPolicy": {
+          "days": 7,
+          "enabled": true
+        }
+      },
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/fileServices"
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', 'storageaccountpushl9725')]"
+      ],
+      "name": "storageaccountpushl9725/default",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/queueServices"
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', 'storageaccountpushl9725')]"
+      ],
+      "name": "storageaccountpushl9725/default",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/tableServices"
+    },
+    {
+      "apiVersion": "2021-01-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', 'ASP-pushlog-94c0')]"
+      ],
+      "identity": {
+        "principalId": "b5249ef5-1679-433a-b9b9-6ac4e0e67180",
+        "tenantId": "4d8e6732-27fa-4b81-9848-e9d700f7436e",
+        "type": "SystemAssigned"
+      },
+      "kind": "functionapp",
+      "location": "Central US",
+      "name": "solvhaolic-push-log",
+      "properties": {
+        "clientAffinityEnabled": false,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "containerSize": 1536,
+        "customDomainVerificationId": "71E1ABAB88C77B639722649858E966CB7BE105B2B710D70BE16CCA4CFD63663D",
+        "dailyMemoryTimeQuota": 0,
+        "enabled": true,
+        "hostNameSslStates": [
+          {
+            "hostType": "Standard",
+            "name": "solvhaolic-push-log.azurewebsites.net",
+            "sslState": "Disabled"
+          },
+          {
+            "hostType": "Repository",
+            "name": "solvhaolic-push-log.scm.azurewebsites.net",
+            "sslState": "Disabled"
+          }
+        ],
+        "hostNamesDisabled": false,
+        "httpsOnly": false,
+        "hyperV": false,
+        "isXenon": false,
+        "keyVaultReferenceIdentity": "SystemAssigned",
+        "redundancyMode": "None",
+        "reserved": false,
+        "scmSiteAlsoStopped": false,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'ASP-pushlog-94c0')]",
+        "siteConfig": {
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "functionAppScaleLimit": 200,
+          "http20Enabled": false,
+          "minimumElasticInstanceCount": 1,
+          "numberOfWorkers": 1
+        },
+        "storageAccountRequired": false
+      },
+      "type": "Microsoft.Web/sites"
+    },
+    {
+      "apiVersion": "2021-01-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'solvhaolic-push-log')]"
+      ],
+      "location": "Central US",
+      "name": "solvhaolic-push-log/ftp",
+      "properties": {
+        "allow": true
+      },
+      "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies"
+    },
+    {
+      "apiVersion": "2021-01-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'solvhaolic-push-log')]"
+      ],
+      "location": "Central US",
+      "name": "solvhaolic-push-log/scm",
+      "properties": {
+        "allow": true
+      },
+      "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies"
+    },
+    {
+      "apiVersion": "2021-01-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'solvhaolic-push-log')]"
+      ],
+      "location": "Central US",
+      "name": "solvhaolic-push-log/web",
+      "properties": {
+        "acrUseManagedIdentityCreds": false,
+        "alwaysOn": false,
+        "autoHealEnabled": false,
+        "azureStorageAccounts": {},
+        "defaultDocuments": [
+          "Default.htm",
+          "Default.html",
+          "Default.asp",
+          "index.htm",
+          "index.html",
+          "iisstart.htm",
+          "default.aspx",
+          "index.php"
+        ],
+        "detailedErrorLoggingEnabled": false,
+        "experiments": {
+          "rampUpRules": []
+        },
+        "ftpsState": "AllAllowed",
+        "functionAppScaleLimit": 200,
+        "functionsRuntimeScaleMonitoringEnabled": false,
+        "http20Enabled": false,
+        "httpLoggingEnabled": false,
+        "ipSecurityRestrictions": [
+          {
+            "action": "Allow",
+            "description": "Allow all access",
+            "ipAddress": "Any",
+            "name": "Allow all",
+            "priority": 1
+          }
+        ],
+        "loadBalancing": "LeastRequests",
+        "localMySqlEnabled": false,
+        "logsDirectorySizeLimit": 35,
+        "managedPipelineMode": "Integrated",
+        "managedServiceIdentityId": 7462,
+        "minTlsVersion": "1.2",
+        "minimumElasticInstanceCount": 1,
+        "netFrameworkVersion": "v4.0",
+        "numberOfWorkers": 1,
+        "phpVersion": "5.6",
+        "preWarmedInstanceCount": 0,
+        "publishingUsername": "$solvhaolic-push-log",
+        "remoteDebuggingEnabled": false,
+        "remoteDebuggingVersion": "VS2019",
+        "requestTracingEnabled": false,
+        "scmIpSecurityRestrictions": [
+          {
+            "action": "Allow",
+            "description": "Allow all access",
+            "ipAddress": "Any",
+            "name": "Allow all",
+            "priority": 1
+          }
+        ],
+        "scmIpSecurityRestrictionsUseMain": false,
+        "scmMinTlsVersion": "1.0",
+        "scmType": "None",
+        "use32BitWorkerProcess": true,
+        "virtualApplications": [
+          {
+            "physicalPath": "site\\wwwroot",
+            "preloadEnabled": false,
+            "virtualPath": "/"
+          }
+        ],
+        "vnetPrivatePortsCount": 0,
+        "vnetRouteAllEnabled": false,
+        "webSocketsEnabled": false
+      },
+      "type": "Microsoft.Web/sites/config"
+    },
+    {
+      "apiVersion": "2021-01-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'solvhaolic-push-log')]"
+      ],
+      "location": "Central US",
+      "name": "solvhaolic-push-log/HttpTrigger1",
+      "properties": {
+        "config": {},
+        "config_href": "https://solvhaolic-push-log.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/function.json",
+        "href": "https://solvhaolic-push-log.azurewebsites.net/admin/functions/HttpTrigger1",
+        "invoke_url_template": "https://solvhaolic-push-log.azurewebsites.net/api/httptrigger1",
+        "isDisabled": false,
+        "language": "node",
+        "script_href": "https://solvhaolic-push-log.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/index.js",
+        "script_root_path_href": "https://solvhaolic-push-log.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/",
+        "test_data": "{\r\n    \"name\": \"Azure\"\r\n}",
+        "test_data_href": "https://solvhaolic-push-log.azurewebsites.net/admin/vfs/data/Functions/sampledata/HttpTrigger1.dat"
+      },
+      "type": "Microsoft.Web/sites/functions"
+    },
+    {
+      "apiVersion": "2021-01-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'solvhaolic-push-log')]"
+      ],
+      "location": "Central US",
+      "name": "solvhaolic-push-log/solvhaolic-push-log.azurewebsites.net",
+      "properties": {
+        "hostNameType": "Verified",
+        "siteName": "solvhaolic-push-log"
+      },
+      "type": "Microsoft.Web/sites/hostNameBindings"
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', 'storageaccountpushl9725', 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', 'storageaccountpushl9725')]"
+      ],
+      "name": "storageaccountpushl9725/default/azure-webjobs-hosts",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', 'storageaccountpushl9725', 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', 'storageaccountpushl9725')]"
+      ],
+      "name": "storageaccountpushl9725/default/azure-webjobs-secrets",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/fileServices', 'storageaccountpushl9725', 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', 'storageaccountpushl9725')]"
+      ],
+      "name": "storageaccountpushl9725/default/solvhaolic-push-logb60a",
+      "properties": {
+        "accessTier": "TransactionOptimized",
+        "enabledProtocols": "SMB",
+        "shareQuota": 5120
+      },
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares"
+    }
+  ],
+  "variables": {}
+}
