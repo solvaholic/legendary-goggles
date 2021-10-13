@@ -19,6 +19,11 @@ data "azurerm_client_config" "current" {}
 resource "azurerm_resource_group" "resource_group" {
   name     = "${var.project}-${var.environment}-resource-group"
   location = var.location
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
 }
 
 # Storage account
@@ -50,6 +55,11 @@ resource "azurerm_app_service_plan" "app_service_plan" {
     tier = "Dynamic"
     size = "Y1"
   }
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
 }
 
 # Function app
@@ -65,6 +75,11 @@ resource "azurerm_function_app" "function_app" {
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
   storage_account_name       = azurerm_storage_account.storage_account.name
   version                    = "~3"
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
 }
 
 # Key vault: key_vault
@@ -85,5 +100,10 @@ resource "azurerm_key_vault" "key_vault" {
       "List",
     ]
     storage_permissions = []
+  }
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
   }
 }
