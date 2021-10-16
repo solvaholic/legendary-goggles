@@ -75,8 +75,8 @@ resource "azurerm_function_app" "function_app" {
   name                       = "${var.project}-${var.environment}-function-app"
   app_service_plan_id        = azurerm_app_service_plan.app_service_plan.id
   app_settings = {
-    GITHUB_WEBHOOK_SECRET    = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault.key_vault.vault_uri}/secrets/github-webhook-secret/)"
-    WEBSITE_RUN_FROM_PACKAGE = "https://${azurerm_storage_account.storage_account.primary_blob_host}/${azurerm_storage_container.storage_container.name}/${azurerm_storage_blob.storage_blob.name}${data.azurerm_storage_account_blob_container_sas.blob_sas.sas}",
+    GITHUB_WEBHOOK_SECRET    = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault.key_vault.vault_uri}secrets/github-webhook-secret/)"
+    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.storage_blob.url}${data.azurerm_storage_account_blob_container_sas.blob_sas.sas}",
   }
   enable_builtin_logging     = false
   identity {
