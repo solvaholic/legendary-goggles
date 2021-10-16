@@ -49,9 +49,26 @@ terraform apply
 TODO: Automate secret rotation on GitHub (with rollback!)
 
 ### 3\. Create the webhook secret
-- Create secret in Azure
-- Set secret in Azure
-- Set secret in GitHub
+
+Run these as az and gh commands in Terraform main.tf?
+
+Make up a secret, and set it in Azure. For example:
+
+```bash
+_secret=$(echo $RANDOM | shasum | cut -d\  -f1)
+_name=github-webhook-secret
+_vault_name=push-log-dev-key-vault
+
+az keyvault secret set --name $_name --vault-name $_vault_name --value $_secret
+```
+
+When it's time to set the secret in the GitHub App:
+
+```bash
+_name=github-webhook-secret
+_vault_name=push-log-dev-key-vault
+az keyvault secret show --name $_name --vault-name $_vault_name | jq -r .value
+```
 
 ### 4\. Deploy the function code
 - (Get credentials and) Push the function
