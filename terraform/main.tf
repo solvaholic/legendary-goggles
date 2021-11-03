@@ -76,7 +76,7 @@ resource "azurerm_function_app" "function_app" {
   app_service_plan_id        = azurerm_app_service_plan.app_service_plan.id
   app_settings = {
     GITHUB_WEBHOOK_SECRET    = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault.key_vault.vault_uri}secrets/github-webhook-secret/)"
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.storage_blob.url}${data.azurerm_storage_account_blob_container_sas.blob_sas.sas}",
+    WEBSITE_RUN_FROM_PACKAGE = "1",
   }
   enable_builtin_logging     = false
   identity {
@@ -145,33 +145,17 @@ data "archive_file" "file_function_app" {
   output_path = "HttpTrigger.zip"
 }
 
-resource "azurerm_storage_container" "storage_container" {
-  name                  = "${var.project}-${var.environment}-storage-container"
-  storage_account_name  = azurerm_storage_account.storage_account.name
-  container_access_type = "private"
+locals {
+    publish_code_command = "az webapp deployment source config-zip --resource-group ${azurerm_resource_group.resource_group.name} --name ${azurerm_function_app.function_app.name} --src ${data.archive_file.file_function_app.output_path}"
 }
 
-resource "azurerm_storage_blob" "storage_blob" {
-  name = "${filesha256(data.archive_file.file_function_app.output_path)}.zip"
-  storage_account_name = azurerm_storage_account.storage_account.name
-  storage_container_name = azurerm_storage_container.storage_container.name
-  type = "Block"
-  source = data.archive_file.file_function_app.output_path
-}
-
-data "azurerm_storage_account_blob_container_sas" "blob_sas" {
-  connection_string = azurerm_storage_account.storage_account.primary_connection_string
-  container_name    = azurerm_storage_container.storage_container.name
-
-  start = "2021-01-01T00:00:00Z"
-  expiry = "2022-01-01T00:00:00Z"
-
-  permissions {
-    read   = true
-    add    = false
-    create = false
-    write  = false
-    delete = false
-    list   = false
+resource "null_resource" "function_app_publish" {
+  provisioner "local-exec" {
+    command = local.publish_code_command
+  }
+  depends_on = [local.publish_code_command]
+  triggers = {
+    input_json = filemd5(data.archive_file.file_function_app.output_path)
+    publish_code_command = local.publish_code_command
   }
 }
